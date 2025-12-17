@@ -1,5 +1,7 @@
 package com.example.media_picker
 
+import GridAdapter
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
@@ -18,6 +20,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.media_picker.ui.theme.Media_pickerTheme
 
 //class MainActivity : ComponentActivity() {
@@ -56,12 +60,18 @@ import com.example.media_picker.ui.theme.Media_pickerTheme
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var imageView: ImageView
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var adapter: GridAdapter
+    private  val uriArray = mutableListOf<Uri>()
 
-    private val pickMedia = registerForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(9)) {
-        if (it.isNotEmpty()) {
-            Log.d("pickMedia", "url: $it")
-             imageView.setImageURI(it[0])
+    private val pickMedia = registerForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(9)) { uris ->
+        if (uris.isNotEmpty()) {
+            Log.d("pickMedia", "uris: $uris")
+
+            uriArray.clear()
+            uriArray.addAll(uris)
+            adapter.notifyDataSetChanged()
+
         } else {
             Log.d("pickMedia", "未选择图片")
         }
@@ -72,15 +82,11 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        imageView = findViewById(R.id.imageView)
 
-        val button = findViewById<Button>(R.id.selectMediaBtn)
-        button.setOnClickListener {
-//            Toast.makeText(this,"btn click", Toast.LENGTH_SHORT).show()
-
-            pickImage()
-
-        }
+        recyclerView = findViewById(R.id.recycleCView)
+        recyclerView.layoutManager = GridLayoutManager(this, 3)
+        adapter = GridAdapter(uriArray, 9, onAddClick = {pickImage()})
+        recyclerView.adapter = adapter
 
 
     }
